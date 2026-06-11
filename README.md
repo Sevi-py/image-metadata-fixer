@@ -3,10 +3,11 @@
 [Download the latest installer](https://github.com/Sevi-py/image-metadata-fixer/releases/latest)
 
 Image Metadata Fixer repairs JPEGs that make Windows Explorer fail with
-`0x88982F52` when editing file details. The affected files this was built for
-contain a large embedded EXIF thumbnail inside the JPEG metadata segment. The
-tool removes that embedded thumbnail, keeps the real photo pixels and normal
-EXIF/GPS/details tags, and leaves the image resolution unchanged.
+`0x88982F52` when editing file details. This can happen with images taken on 
+some Samsung phones. The affected files this was built for contain a large 
+embedded EXIF thumbnail inside the JPEG metadata segment. The tool removes that
+embedded thumbnail, keeps the real photo pixels and normalEXIF/GPS/details tags,
+and leaves the image resolution unchanged.
 
 ## Install
 
