@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+      - "samples/**"
+      - "test-output/**"
+      - ".gitignore"
+      - "LICENSE*"
+      - ".github/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build Windows release
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Rust version
+        shell: pwsh
+        run: |
+          rustc --version
+          cargo --version
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test
+        shell: pwsh
+        run: cargo test --locked
+
+      - name: Build release binaries
+        shell: pwsh
+        run: |
+          cargo build --release --locked
+          Copy-Item target\release\image_metadata_fixer.exe target\release\imagefixer.exe -Force
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Prepare version
+        id: version
+        shell: pwsh
+        run: |
+          $version = "0.1.$env:GITHUB_RUN_NUMBER"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $isccCandidates = @(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+          )
+          $iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) { throw "ISCC.exe was not found" }
+          & $iscc installer\ImageMetadataFixer.iss "/DMyAppVersion=${{ steps.version.outputs.version }}"
+
+      - name: Build portable zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist\portable | Out-Null
+          Copy-Item target\release\image_metadata_fixer.exe dist\portable\
+          Copy-Item target\release\imagefixer.exe dist\portable\
+          Copy-Item target\release\image_metadata_fixer_context.exe dist\portable\
+          Copy-Item README.md dist\portable\
+          Compress-Archive -Path dist\portable\* -DestinationPath "dist\image-metadata-fixer-portable-${{ steps.version.outputs.version }}.zip" -Force
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          $notes = @(
+            "Automated Windows build for functional change $env:GITHUB_SHA.",
+            "",
+            "Assets:",
+            "- image-metadata-fixer-setup-${{ steps.version.outputs.version }}.exe: per-user installer",
+            "- image-metadata-fixer-portable-${{ steps.version.outputs.version }}.zip: portable CLI/context binaries"
+          ) -join "`n"
+          gh release create $tag dist\image-metadata-fixer-setup-${{ steps.version.outputs.version }}.exe dist\image-metadata-fixer-portable-${{ steps.version.outputs.version }}.zip --title "Image Metadata Fixer $tag" --notes $notes
