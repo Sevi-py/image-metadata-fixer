@@ -604,20 +604,22 @@ fn install_context_menu() -> Result<()> {
     };
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
 
-    for key_path in [
-        r"Software\Classes\Directory\shell\ImageMetadataFixer",
-        r"Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer",
-    ] {
+    for key_path in legacy_context_menu_keys() {
+        let _ = hkcu.delete_subkey_all(key_path);
+    }
+
+    for key_path in context_menu_keys() {
         let (key, _) = hkcu.create_subkey(key_path)?;
         key.set_value("", &"Fix image metadata")?;
         key.set_value("MUIVerb", &"Fix image metadata")?;
-        key.set_value("Icon", &exe.display().to_string())?;
+        key.set_value("Icon", &launcher.display().to_string())?;
+        key.set_value("MultiSelectModel", &"Player")?;
 
         let (command_key, _) = key.create_subkey("command")?;
         command_key.set_value("", &command)?;
     }
 
-    println!("Installed Explorer context menu entries for folders and images.");
+    println!("Installed Explorer context menu entries for JPEG files and folders.");
     Ok(())
 }
 
@@ -632,10 +634,10 @@ fn uninstall_context_menu() -> Result<()> {
     use winreg::enums::HKEY_CURRENT_USER;
 
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-    for key_path in [
-        r"Software\Classes\Directory\shell\ImageMetadataFixer",
-        r"Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer",
-    ] {
+    for key_path in context_menu_keys()
+        .iter()
+        .chain(legacy_context_menu_keys().iter())
+    {
         let _ = hkcu.delete_subkey_all(key_path);
     }
 
@@ -646,6 +648,24 @@ fn uninstall_context_menu() -> Result<()> {
 #[cfg(not(windows))]
 fn uninstall_context_menu() -> Result<()> {
     bail!("context menu removal is only supported on Windows")
+}
+
+#[cfg(windows)]
+fn context_menu_keys() -> [&'static str; 4] {
+    [
+        r"Software\Classes\Directory\shell\ImageMetadataFixer",
+        r"Software\Classes\SystemFileAssociations\.jpg\shell\ImageMetadataFixer",
+        r"Software\Classes\SystemFileAssociations\.jpeg\shell\ImageMetadataFixer",
+        r"Software\Classes\SystemFileAssociations\.jpe\shell\ImageMetadataFixer",
+    ]
+}
+
+#[cfg(windows)]
+fn legacy_context_menu_keys() -> [&'static str; 2] {
+    [
+        r"Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer",
+        r"Software\Classes\AllFilesystemObjects\shell\ImageMetadataFixer",
+    ]
 }
 
 #[cfg(test)]

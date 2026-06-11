@@ -52,8 +52,29 @@ jobs:
       - name: Prepare version
         id: version
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          $version = "0.1.$env:GITHUB_RUN_NUMBER"
+          $tags = @()
+          $tags += gh release list --limit 100 --json tagName --jq '.[].tagName'
+          $tags += git ls-remote --tags origin "refs/tags/v1.0.*" | ForEach-Object {
+            ($_ -split "\s+")[-1] -replace "^refs/tags/", "" -replace "\^{}", ""
+          }
+
+          $patches = @()
+          foreach ($tag in $tags | Sort-Object -Unique) {
+            if ($tag -match '^v1\.0\.(\d+)$') {
+              $patches += [int]$Matches[1]
+            }
+          }
+
+          $patch = if ($patches.Count -eq 0) {
+            0
+          } else {
+            (($patches | Measure-Object -Maximum).Maximum + 1)
+          }
+
+          $version = "1.0.$patch"
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=v$version" >> $env:GITHUB_OUTPUT
 

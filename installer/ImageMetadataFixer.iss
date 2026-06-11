@@ -1,5 +1,5 @@
 #ifndef MyAppVersion
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "1.0.0"
 #endif
 
 #define MyAppName "Image Metadata Fixer"
@@ -36,14 +36,28 @@ Name: "{group}\Image Metadata Fixer"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Uninstall Image Metadata Fixer"; Filename: "{uninstallexe}"
 
 [Registry]
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer"; Flags: deletekey
+Root: HKCU; Subkey: "Software\Classes\AllFilesystemObjects\shell\ImageMetadataFixer"; Flags: deletekey
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\ImageMetadataFixer"; ValueType: string; ValueName: ""; ValueData: "Fix image metadata"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Fix image metadata"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\ImageMetadataFixer"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppContextExeName}"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\Directory\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\ImageMetadataFixer\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppContextExeName}"" ""%1"""; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer"; ValueType: string; ValueName: ""; ValueData: "Fix image metadata"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Fix image metadata"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppContextExeName}"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppContextExeName}"" ""%1"""; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\ImageMetadataFixer"; ValueType: string; ValueName: ""; ValueData: "Fix image metadata"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Fix image metadata"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\ImageMetadataFixer"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppContextExeName}"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\ImageMetadataFixer\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppContextExeName}"" ""%1"""; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\ImageMetadataFixer"; ValueType: string; ValueName: ""; ValueData: "Fix image metadata"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Fix image metadata"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\ImageMetadataFixer"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppContextExeName}"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\ImageMetadataFixer\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppContextExeName}"" ""%1"""; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpe\shell\ImageMetadataFixer"; ValueType: string; ValueName: ""; ValueData: "Fix image metadata"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpe\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MUIVerb"; ValueData: "Fix image metadata"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpe\shell\ImageMetadataFixer"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppContextExeName}"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpe\shell\ImageMetadataFixer"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.jpe\shell\ImageMetadataFixer\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppContextExeName}"" ""%1"""; Flags: uninsdeletekey
 
 [Code]
 const
@@ -146,6 +160,16 @@ begin
   RegWriteStringValue(HKEY_CURRENT_USER, EnvironmentKey, 'Path', NewPath);
 end;
 
+procedure RemoveContextMenuEntries;
+begin
+  RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Classes\AllFilesystemObjects\shell\ImageMetadataFixer');
+  RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Classes\Directory\shell\ImageMetadataFixer');
+  RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Classes\SystemFileAssociations\image\shell\ImageMetadataFixer');
+  RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Classes\SystemFileAssociations\.jpg\shell\ImageMetadataFixer');
+  RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Classes\SystemFileAssociations\.jpeg\shell\ImageMetadataFixer');
+  RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Classes\SystemFileAssociations\.jpe\shell\ImageMetadataFixer');
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
@@ -155,5 +179,8 @@ end;
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usPostUninstall then
+  begin
     RemoveInstallDirFromUserPath;
+    RemoveContextMenuEntries;
+  end;
 end;

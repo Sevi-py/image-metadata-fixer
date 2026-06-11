@@ -21,7 +21,7 @@ It also:
 
 - Adds the install folder to your user `PATH`, so the CLI is available in new
   terminals as `imagefixer`.
-- Adds `Fix image metadata` to the Explorer right-click menu for image files and
+- Adds `Fix image metadata` to the Explorer right-click menu for JPEG files and
   folders.
 - Updates an existing install in the same location when you run a newer setup.
 
@@ -39,6 +39,10 @@ single-file status, such as `Fixed image metadata.` or
 
 Right-click a folder to process all supported JPEGs directly inside that folder.
 Subfolders are not scanned from the context menu.
+
+You can also select multiple JPEG files, multiple folders, or a mix of both.
+The popup uses the folder-style summary, and unsupported files passed by
+Explorer are counted without blocking supported JPEGs in the same selection.
 
 ## CLI Usage
 
